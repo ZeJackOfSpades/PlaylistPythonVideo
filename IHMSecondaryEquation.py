@@ -1,5 +1,5 @@
 #coding:utf-8
-"""﻿
+"""
 	FILE NAME	:	IHMSecondaryEquation.py
 	DESCRIPTION :	This file is a program wich can calculate all the solutions 
 					for a secondary equation
@@ -23,6 +23,8 @@
 					1.7.0		Add the basics exceptions for the groups of display window and coefficiens window
 					1.7.1		The main window is no longer resizable
 					1.7.5		Add the time when the results are saved in the file
+					1.7.6		Frac display for the solutions (sometimes it is a big frac)
+					1.7.7		Max frac display
 			
 """
 
@@ -35,9 +37,10 @@ import matplotlib.pyplot as plt
 
 from PIL import Image, ImageTk
 from math import *
+from fractions import *
 from tkinter import messagebox
 
-version 	=	"1.7.5"
+version 	=	"1.7.7"
 
 
 deltaSup0	=	"Delta={}\nX1={}\nX2={}\n" 	#Displaying format for delta > 0
@@ -45,6 +48,14 @@ deltaEqu0	=	"Delta={}\nX={}\n"			#Displaying format for delta = 0
 deltaInf0	=	"Delta={}\nZ1={}\nZ2={}\n"	#Displaying format for delta < 0
 aZero		=	"Delta={}\nX={}\n"
 
+limitDenominator = 100
+
+if os.name == "posix":
+	clear = "clear"
+else:
+	clear = "cls"
+
+os.system(clear)
 
 def p(x,a,b,c):
     #return x**4 - 4*x**2 + 3*x
@@ -89,20 +100,20 @@ def calculation(*args):
 
 		elif a ==0 :
 			X = -c / b
-			textResults.set(aZero.format(delta,X))
+			textResults.set(aZero.format(delta,Fraction.from_float(X).limit_denominator(limitDenominator)))
 			resultat = textResults.get()
 		else:
 			if delta > 0 :
 				x1 = (-b + sqrt(delta)) / (2*a)
 				x2 = (-b - sqrt(delta)) / (2*a)
 				
-				textResults.set(deltaSup0.format(delta, x1, x2))
+				textResults.set(deltaSup0.format(delta, Fraction.from_float(x1).limit_denominator(limitDenominator), Fraction.from_float(x2).limit_denominator(limitDenominator)))
 				resultat = textResults.get()
 
 			elif delta == 0:
 				zeroX = (-b )/ (2*a)
 				
-				textResults.set(deltaEqu0.format(delta,zeroX))
+				textResults.set(deltaEqu0.format(delta,Fraction.from_float(zeroX).limit_denominator(limitDenominator)))
 				resultat = textResults.get()
 
 			else:
@@ -110,9 +121,9 @@ def calculation(*args):
 				ZR	=-b / (2*a)
 				ZC	=sqrt(-delta)/(2*a)
 
-				Z1 	= "{} +j {}".format(ZR, ZC)
-				Z2 	= "{} -j {}".format(ZR, ZC)	
-				textResults.set(deltaInf0.format(delta, Z1, Z2))
+				Z1 	= "{} +j {}".format(Fraction.from_float(ZR).limit_denominator(limitDenominator), Fraction.from_float(ZC).limit_denominator(limitDenominator))
+				Z2 	= "{} -j {}".format(Fraction.from_float(ZR).limit_denominator(limitDenominator), Fraction.from_float(ZC).limit_denominator(limitDenominator))	
+				textResults.set(deltaInf0.format(Fraction.from_float(delta).limit_denominator(limitDenominator), Z1, Z2))
 				resultat = textResults.get()
 		enregistrementFichier("saveDatas.txt", coefficiensLabels, resultat, separationTexte,fileBoxValue.get())
 
@@ -195,13 +206,11 @@ def affichageFonction(*args):
 			plt.show()
 		finally:
 			pass
-		
-
-
 #----------------------------------------------------------------------------------------
 #										MAIN				
 #----------------------------------------------------------------------------------------
 mainApp				=	tkinter.Tk()
+
 #mainApp.geometry("840x320")
 #mainApp.minsize(width=1080, height= 300)
 mainApp.resizable(False, False)
@@ -210,7 +219,7 @@ mainApp.title("Secondary Equation Resolution")
 #variables
 textResults			=	tkinter.StringVar()
 
-image 				=	Image.open("/home/user/Images/tontonFlingeursBD.jpg")
+image 				=	Image.open("includes\images\oldLogoSDJ.jpeg")
 photo				=	ImageTk.PhotoImage(image)
 
 labelImage 			=	tkinter.Label(image=photo)
